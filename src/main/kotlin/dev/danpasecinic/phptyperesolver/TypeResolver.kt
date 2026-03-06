@@ -1,6 +1,7 @@
 package dev.danpasecinic.phptyperesolver
 
 private val MIXED = TypeFactory.createType("mixed")
+private val WHITESPACE = "\\s+".toRegex()
 
 fun inferTypeFromDoc(variable: PhpVariable): PhpType {
     val docBlock = variable.getDocBlock() ?: return MIXED
@@ -12,10 +13,11 @@ fun inferTypeFromDoc(variable: PhpVariable): PhpType {
     var unnamedType: String? = null
 
     for (tag in tags) {
-        val parts = tag.getValue().trim().split("\\s+".toRegex())
+        val parts = tag.getValue().trim().split(WHITESPACE)
         if (parts.isEmpty()) continue
 
         val typeStr = parts[0]
+        if (typeStr.isEmpty()) continue
 
         if (parts.size >= 2) {
             if (parts[1] == variableName) {
@@ -34,11 +36,10 @@ fun inferTypeFromDoc(variable: PhpVariable): PhpType {
 }
 
 private fun parseType(typeStr: String): PhpType {
-    val parts = typeStr.split("|")
+    val parts = typeStr.split("|").filter { it.isNotEmpty() }
 
-    if (parts.size == 1) {
-        return TypeFactory.createType(parts[0])
-    }
+    if (parts.isEmpty()) return MIXED
+    if (parts.size == 1) return TypeFactory.createType(parts[0])
 
     return TypeFactory.createUnionType(parts.map { TypeFactory.createType(it) })
 }

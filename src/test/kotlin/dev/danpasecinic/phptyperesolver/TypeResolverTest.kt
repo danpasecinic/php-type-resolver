@@ -58,6 +58,33 @@ class TypeResolverTest {
         assertEquals(TypeFactory.createType("mixed"), inferTypeFromDoc(variable))
     }
 
+    @Test
+    fun `empty tag value returns mixed`() {
+        val variable = mockVariable(phpVar("x"), listOf(mockTag("")))
+        assertEquals(TypeFactory.createType("mixed"), inferTypeFromDoc(variable))
+    }
+
+    @Test
+    fun `tag with extra whitespace`() {
+        val variable = mockVariable(phpVar("x"), listOf(mockTag("  string   ${phpVar("x")}  ")))
+        assertEquals(TypeFactory.createType("string"), inferTypeFromDoc(variable))
+    }
+
+    @Test
+    fun `multiple unnamed tags returns mixed`() {
+        val variable = mockVariable(phpVar("x"), listOf(mockTag("string"), mockTag("int")))
+        assertEquals(TypeFactory.createType("mixed"), inferTypeFromDoc(variable))
+    }
+
+    @Test
+    fun `named tag with union type`() {
+        val variable = mockVariable(phpVar("id"), listOf(mockTag("string|int ${phpVar("id")}")))
+        val expected = TypeFactory.createUnionType(
+            listOf(TypeFactory.createType("string"), TypeFactory.createType("int"))
+        )
+        assertEquals(expected, inferTypeFromDoc(variable))
+    }
+
     private fun mockTag(value: String): DocTag {
         val tag = mock<DocTag>()
         whenever(tag.getValue()).thenReturn(value)
