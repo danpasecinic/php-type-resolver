@@ -7,15 +7,17 @@ import kotlin.test.assertEquals
 
 class TypeResolverTest {
 
+    private fun phpVar(name: String) = $$"$$$name"
+
     @Test
     fun `standard type from unnamed tag`() {
-        val variable = mockVariable("\$user", listOf(mockTag("User")))
+        val variable = mockVariable(phpVar("user"), listOf(mockTag("User")))
         assertEquals(TypeFactory.createType("User"), inferTypeFromDoc(variable))
     }
 
     @Test
     fun `union type`() {
-        val variable = mockVariable("\$id", listOf(mockTag("string|int")))
+        val variable = mockVariable(phpVar("id"), listOf(mockTag("string|int")))
         val expected = TypeFactory.createUnionType(
             listOf(TypeFactory.createType("string"), TypeFactory.createType("int"))
         )
@@ -24,19 +26,22 @@ class TypeResolverTest {
 
     @Test
     fun `named tag matches variable`() {
-        val variable = mockVariable("\$log", listOf(mockTag("Logger \$log")))
+        val variable = mockVariable(phpVar("log"), listOf(mockTag("Logger ${phpVar("log")}")))
         assertEquals(TypeFactory.createType("Logger"), inferTypeFromDoc(variable))
     }
 
     @Test
     fun `named tag does not match variable`() {
-        val variable = mockVariable("\$guest", listOf(mockTag("Admin \$adm")))
+        val variable = mockVariable(phpVar("guest"), listOf(mockTag("Admin ${phpVar("adm")}")))
         assertEquals(TypeFactory.createType("mixed"), inferTypeFromDoc(variable))
     }
 
     @Test
     fun `multiple tags selects matching name`() {
-        val variable = mockVariable("\$name", listOf(mockTag("int \$id"), mockTag("string \$name")))
+        val variable = mockVariable(
+            phpVar("name"),
+            listOf(mockTag("int ${phpVar("id")}"), mockTag("string ${phpVar("name")}"))
+        )
         assertEquals(TypeFactory.createType("string"), inferTypeFromDoc(variable))
     }
 
@@ -49,7 +54,7 @@ class TypeResolverTest {
 
     @Test
     fun `no var tags returns mixed`() {
-        val variable = mockVariable("\$x", emptyList())
+        val variable = mockVariable(phpVar("x"), emptyList())
         assertEquals(TypeFactory.createType("mixed"), inferTypeFromDoc(variable))
     }
 
