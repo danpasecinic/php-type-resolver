@@ -10,7 +10,9 @@ data class SimpleType(override val name: String) : PhpType {
 
 data class UnionType(val types: List<PhpType>) : PhpType {
     init {
-        require(types.size >= 2) { "UnionType requires at least 2 types, got ${types.size}" }
+        require(types.size >= 2) {
+            "UnionType requires at least 2 types, got ${types.size}"
+        }
     }
 
     override val name: String get() = types.joinToString("|") { it.name }
