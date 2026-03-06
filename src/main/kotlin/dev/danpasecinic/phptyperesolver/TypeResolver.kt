@@ -37,9 +37,6 @@ fun inferTypeFromDoc(variable: PhpVariable): PhpType {
 
 private fun parseType(typeStr: String): PhpType {
     val parts = typeStr.split("|").filter { it.isNotEmpty() }
-
     if (parts.isEmpty()) return MIXED
-    if (parts.size == 1) return TypeFactory.createType(parts[0])
-
     return TypeFactory.createUnionType(parts.map { TypeFactory.createType(it) })
 }
